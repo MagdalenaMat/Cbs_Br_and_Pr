@@ -77,12 +77,16 @@ desine1$size_f = NA
 for(i in c(300000,100000,10000)){
     desine1[desine1$sizes < i,"size_f"] = paste0("smaller_than_",i)
 }  
-desine1$size_f =factor(desine1$size_f)
 
 desine1[is.na(desine1$size_f), "size_f"] = "bigger_than_0.3M"
+desine1$size_f =factor(desine1$size_f)
+
+levels(desine1$size_f) = c("bigger_than_0.3M","smaller_than_0.3M")
+table(desine1$size_f)
 
 library(ggplot2)
-png("total_reads.png", width = 1200, height = 800)
+setwd("~/Desktop/s7s_Breast/data")
+png("total_reads_5batches.png", width = 1200, height = 800)
 ggplot(desine1, aes(x = name, y = sizes, 
                     fill = size_f)) + 
   facet_grid(. ~ batch, labeller = label_value, scales = "free", space = "free") +
@@ -91,9 +95,11 @@ ggplot(desine1, aes(x = name, y = sizes,
   scale_fill_brewer(palette="Dark2")
 dev.off()
 
+################################################################################################################
 setwd("~/Desktop/s7s_Breast/")
-write.table(desine1, "desine.BC.txt", sep = "\t")
-write.table(results_df, "breast.data.combined.agregated.gene.names.txt", sep = "\t", row.names = TRUE)
+write.table(desine1, "desine.BC_5batches.txt", sep = "\t")
+write.table(results_df, "breast.data.combined.agregated.gene.names_5batches.txt", sep = "\t", row.names = TRUE)
+################################################################################################################
 
 dim(results_df)
 sorted.res = results_df[rowSums(results_df) > 0 , desine1$sizes > 10000]
