@@ -231,7 +231,7 @@ p <- plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, text = ~ name,
   layout(title = "DESeq2::vst transformed original data")
 p
 
-
+#############write data to the disk
 normal = TPM[,desine2$subtype == "normal"]
 EN = TPM[,desine2$subtype == "EN"]
 DCIS = TPM[,desine2$subtype == "DCIS"]

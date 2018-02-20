@@ -59,6 +59,7 @@ results_df = data.frame(names = results$DCIS$GeneNames)
 for(i in names(results)){
   results_df = cbind(results_df, results[[i]][,c(2:length(colnames(results[[i]])))])
 }
+dim(results_df)
 
 #deduplicate gene names names, leave the row with the max value per gene  
 results_df <- aggregate(. ~ names, data = results_df, max)
@@ -66,7 +67,9 @@ rownames(results_df) = results_df$names
 results_df$names = NULL
 all(desine1$name == colnames(results_df))
 desine1$batch = sub("\\_.*","", desine1$batch)
-desine1$batch = sub("\\..*","", desine1$batch)
+#desine1$batch = sub("\\..*","", desine1$batch)
+
+desine1$batch[desine1$batch == "August"] = "160801" 
 
 #calculate total read counts after duplicate gene names were removed
 desine1 = cbind(desine1, 
@@ -86,10 +89,10 @@ levels(desine1$size_f) = c("bigger_than_300K",
                            "smaller_than_20K",
                            "between_100K_and_300K")
 table(desine1$size_f)
-desine1[desine1$size_f == "smaller_than_20K",c("name","batch")]
+desine1[desine1$size_f == "smaller_than_20K",c("name","batch", "sizes")]
 
 library(ggplot2)
-png("total_reads.png", width = 1200, height = 600)
+png("total_reads_5batches_and_new_Peipei.png", width = 1200, height = 600)
 ggplot(desine1, aes(x = name, y = sizes, 
                     fill = size_f)) + 
   facet_grid(. ~ batch, labeller = label_value, scales = "free", space = "free") +
@@ -99,8 +102,8 @@ ggplot(desine1, aes(x = name, y = sizes,
 dev.off()
 
 setwd("~/Desktop/s7s_Breast/")
-write.table(desine1, "desine.BC.txt", sep = "\t")
-write.table(results_df, "breast.data.combined.agregated.gene.names.txt", sep = "\t", row.names = TRUE)
+write.table(desine1, "desine.BC_5b_and_Peipei_new_data.txt", sep = "\t")
+write.table(results_df, "breast.data.combined.agregated.gene.names_5b_and_Peipei_new_data.txt", sep = "\t", row.names = TRUE)
 
 desine1 = read.table("desine.BC.txt", sep = "\t")
 results_df = read.table("breast.data.combined.agregated.gene.names.txt", sep = "\t", row.names = 1)
@@ -119,6 +122,10 @@ desine2$total_count = desine2$sizes > 300000
 desine2$Megan = NA
 desine2$Megan[grep("Megan", desine2$batch)] = "Megan"
 desine2$Megan[is.na(desine2$Megan)] = "rest"
+
+desine2$batch18 = NA
+desine2$batch18[grep("^18", desine2$batch)] = "batches_2018"
+desine2$batch18[is.na(desine2$batch18)] = "rest"
 
 sorted.res = as.matrix(sorted.res)
 rownames(desine2) = desine2$name
@@ -148,7 +155,8 @@ p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group,
   layout(title = "colored by stage", 
          legend = list(orientation = 'h'), 
          margin = m)
-export(p, "PCA_stage.png")
+p
+export(p, "PCA_stage_5_peipei.png")
 #color by librery size
 PCA = plotPCA(vsd, "sizes")
 dataPCA = PCA$data
@@ -157,7 +165,8 @@ p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, text = ~ name,
         marker = list(size = 20),
         autosize = F, width = 900, height = 600) %>%
   layout(title = "colored by total count in every sample",legend = list(orientation = 'h'))
-export(p, "PCA_total_count.png")
+p
+export(p, "PCA_total_count_5_peipei.png")
 #color by batch
 PCA = plotPCA(vsd, "batch")
 dataPCA = PCA$data
@@ -166,16 +175,18 @@ p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group,
         marker = list(size = 20),
         autosize = F, width = 900, height = 600) %>%
   layout(title = "colored by batch",legend = list(orientation = 'h'))
-export(p, "PCA_batch.png")
+p
+export(p, "PCA_batch_5_peipei.png")
 #color by total_count
 PCA = plotPCA(vsd, "total_count")
 dataPCA = PCA$data
 p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, 
         text = ~ name, colors = "Set2", 
-        marker = list(size = 10),
+        marker = list(size = 20),
         autosize = F, width = 900, height = 600) %>%
   layout(title = "total count bigget than 300K reads",legend = list(orientation = 'h'))
-export(p, "PCA_count_300K.png")
+p
+export(p, "PCA_count_300K_5_peipei.png")
 #color by Megan
 
 PCA = plotPCA(vsd, "Megan")
@@ -191,11 +202,26 @@ PCA = plotPCA(vsd, "size_f")
 dataPCA = PCA$data
 p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, 
         text = ~ name, colors = "Set2", 
-        marker = list(size = 10),
+        marker = list(size = 20),
         autosize = F, width = 900, height = 600) %>%
   layout(title = "size factor colored",legend = list(orientation = 'h'))
-export(p, "PCA_size_factor.png")
+p
+export(p, "PCA_size_factor__5_peipei.png")
 
+#color by betches from 2018
+PCA = plotPCA(vsd, "batch18")
+dataPCA = PCA$data
+p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, 
+            text = ~ name, colors = "Set2", 
+            marker = list(size = 20),
+            autosize = F, width = 900, height = 600) %>%
+  layout(title = "size factor colored",legend = list(orientation = 'h'))
+p
+export(p, "PCA_batches_2018_5_peipei.png")
+
+table(desine2$subtype, desine2$batch18)
+table(desine2$batch, desine2$batch18)
+table(desine2$batch, desine2$subtype)
 
 #library size normalize the data
 dds <- estimateSizeFactors(dds)
@@ -203,14 +229,16 @@ DESEq2_norm_counts = counts(dds, normalized = TRUE)
 
 # remove potential batch effect
 
-TPM = 1E6 * sweep(sorted.res, 2, colSums(sorted.res), "/")
-keep = rowSums(TPM > 1) >= 4
-TPM1 = TPM[keep,]
+#TPM = 1E6 * sweep(sorted.res, 2, colSums(sorted.res), "/")
+keep = rowSums(DESEq2_norm_counts > 1) >= 4
+norm_counts = DESEq2_norm_counts[keep,]
+dim(DESEq2_norm_counts)
+dim(norm_counts)
 
 library(sva)
 batch = desine2$batch
 modcombat = model.matrix(~as.factor(subtype), data=desine2) #variable of interest shuld be included
-combat_edata = 2^ComBat(dat=log2(TPM1+1), batch=batch, mod=modcombat, par.prior=TRUE, prior.plots=FALSE) 
+combat_edata = 2^ComBat(dat=log2(norm_counts+1), batch=batch, mod=modcombat, par.prior=TRUE, prior.plots=FALSE) 
 
 combat_edata = round(combat_edata)
 library(DESeq2)
@@ -236,7 +264,8 @@ p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group,
   layout(title = "colored by stage", 
          legend = list(orientation = 'h'), 
          margin = m)
-export(p, "PCA_stage_batchcorr.png")
+p
+export(p, "PCA_stage_batch_corr_5batch_plus_2018.png")
 #color by librery size
 PCA = plotPCA(vsd, "sizes")
 dataPCA = PCA$data
@@ -245,7 +274,8 @@ p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, text = ~ name,
             marker = list(size = 20),
             autosize = F, width = 900, height = 600) %>%
   layout(title = "colored by total count in every sample",legend = list(orientation = 'h'))
-export(p, "PCA_total_count_batchcarr.png")
+p
+export(p, "PCA_total_count_batch_corr__5batch_plus_2018.png")
 #color by batch
 PCA = plotPCA(vsd, "batch")
 dataPCA = PCA$data
@@ -254,19 +284,45 @@ p = plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group,
             marker = list(size = 20),
             autosize = F, width = 900, height = 600) %>%
   layout(title = "colored by batch",legend = list(orientation = 'h'))
-export(p, "PCA_batch_batchcorr.png")
-
-
-PCA = plotPCA(vsd, "subtype")
-dataPCA = PCA$data
-plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, text = ~ name, colors = "Set2", marker = list(size = 20))%>%
-  layout(title = "ComBat batch corrected")
-
-PCA = plotPCA(vsd, "batch")
-dataPCA = PCA$data
-plot_ly(data = dataPCA, x = ~PC1, y = ~PC2, color = ~group, text = ~ name, colors = "Set2", marker = list(size = 20))%>%
-  layout(title = "ComBat batch corrected")
-
+p
+export(p, "PCA_batch_batch_corr_5batch_plus_2018.png")
 
 #annotate gene names to HUGO symbols
+mixture = data.frame(GeneNames = rownames(combat_edata), combat_edata)
+
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+
+genes = as.character(mixture$GeneNames)
+genes.list <- mapIds(org.Hs.eg.db, keys = genes, column = "SYMBOL", keytype = "ENSEMBL", multiVals = "first")
+list1 = data.frame(lapply(genes.list, type.convert), stringsAsFactors=FALSE)
+list2 = t(list1)
+list2 = data.frame(list2)
+list2$ens_id = rownames(list2)
+ex1 = merge(list2, mixture, by.x="ens_id", by.y="GeneNames")
+ex1$ens_id = NULL
+ex2 = ex1[complete.cases(ex1),]
+colnames(ex2)[1] = "genes"
+table(duplicated(ex2[,1]))
+ex3 = aggregate(. ~ genes, data = ex2, max)
+rownames(ex3) = ex3$genes
+ex3$genes = NULL
+
+all(colnames(ex3) == desine2$name)
+normal = ex3[,desine2$subtype == "normal"]
+EN = ex3[,desine2$subtype == "EN"]
+DCIS = ex3[,desine2$subtype == "DCIS"]
+IDC = ex3[,desine2$subtype == "IDC"]
+
+table(desine2$subtype)
+
+dataPr = list(normal, EN, DCIS, IDC)
+names(dataPr) = c("normal", "EN", "DCIS", "IDC")
+
+setwd("~/Desktop/s7s_Breast/data_for_decon/5_batches_plus_2018_batches/batch_corr/")
+for(i in names(dataPr)){
+  dataPr[[i]] = data.frame(genenames = rownames(ex3), dataPr[[i]])
+  write.table(dataPr[[i]], paste0("bc_8batches_batch_corr_", i, ".txt"), sep = "\t", row.names = F, col.names = T, quote = F)
+}
+
 
