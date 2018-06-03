@@ -1,10 +1,10 @@
 #### Magdalena Matusiak
-#### NOT batch corrected
+#### May 15 2108 
 #### analysis of immune landscape changes in breast cancer progression
-#### LCM bulk RNASeq deconvoluted with CibersortX
-#### 8 batches data DESeq2 size factor normalized
+#### LCM bulk RNASeq  deconvoluted with CibersortX
+#### 2016 and 2017 batches data DESeq2 size factor normalized and NOT batch corrected cause we concluded analysing distrigution of notmal cances that we should not correct 
 
-#Monocytes_Macrophages
+#Tcells separately CD8 and CD4
 
 
 mgsub <- function(pattern, replacement, x, ...) {
@@ -19,14 +19,14 @@ mgsub <- function(pattern, replacement, x, ...) {
 }
 
 
-path = "~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/Filtered/"
+path = "~/Desktop/s7s_Breast/data/2016_2017_NOT_batch_corrected/2016_2017_group_level_CBx_NOT_BC/Filtered/"
 setwd(path)
 files <- list.files(path=path)
 files
 #extract names
 namesGEP = as.character()
 for (i in files){
-  nam = mgsub(c("CIBERSORTxGEP_20180314_not_batch_corrected_",".txt_GEPs_Filtered.txt"),c("",""),i)
+  nam = mgsub(c("CIBERSORTxGEP_2016_2017_NOT_BC_",".txt_GEPs_Filtered.txt"),c("",""),i)
   namesGEP = c(namesGEP, nam)
 }
 
@@ -49,10 +49,6 @@ rownames(gene_count) = namesGEP
 colnames(gene_count) =colnames(filteredGEP[[1]])
 
 gene_count
-genecount = gene_count[c(4,2,1,3),]
-
-rownames(gene_count) = namesGEP
-colnames(gene_count) =colnames(filteredGEP[[1]])
 
 lapply(filteredGEP, dim) ##dim differ between diferent stages (runs of CibersortX)
 
@@ -67,26 +63,26 @@ universe = Reduce(intersect, results)
 length(universe)
 #extract genes in monocyte signature common for all samples 
 colnames(filteredGEP$DCIS)
-Mono_ex = data.frame(matrix(NA, nrow = length(universe), ncol = 1))
+Tcell_ex = data.frame(matrix(NA, nrow = length(universe), ncol = 1))
 for (i in namesGEP){
-  Mono = filteredGEP[[i]][filteredGEP[[i]][,1] %in% universe,c("GeneSymbol","Monocytes")] #select gene_names and Monocytes
-  Mono_ex = cbind(Mono_ex,Mono)
+  Tcell = filteredGEP[[i]][filteredGEP[[i]][,1] %in% universe,c("GeneSymbol","CD4Tcells")] #select gene_names and Tcells
+  Tcell_ex = cbind(Tcell_ex,Tcell)
 }
 
-all(as.character(Mono_ex[,2])==as.character(Mono_ex[,4]))
-rownames(Mono_ex) = as.character(Mono_ex[,2])
-Mono_ex = Mono_ex[, seq(3, length(Mono_ex), 2)]
-colnames(Mono_ex) = c("DCIS","EN","IDC","normal")
+all(as.character(Tcell_ex[,2])==as.character(Tcell_ex[,4]))
+rownames(Tcell_ex) = as.character(Tcell_ex[,2])
+Tcell_ex = Tcell_ex[, seq(3, length(Tcell_ex), 2)]
+colnames(Tcell_ex) = c("AVL", "DCIS","EN","IDC","normal")
 
 
-Mono_ex[Mono_ex<=1] <- NA
-predicted_genes_Monocytes = apply(Mono_ex, 2, function(x){sum(!is.na(x))})
-predicted_genes_Monocytes
+Tcell_ex[Tcell_ex<=1] <- NA
+predicted_genes_Tcells = apply(Tcell_ex, 2, function(x){sum(!is.na(x))})
+predicted_genes_Tcells
 ##############
 #StErrors
 #############
 
-path = "~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/StErr/"
+path = "~/Desktop/s7s_Breast/data/2016_2017_NOT_batch_corrected/2016_2017_group_level_CBx_NOT_BC/StErr/"
 
 setwd(path)
 files <- list.files(path=path)
@@ -94,7 +90,7 @@ files
 #extract names
 namesStEr = as.character()
 for (i in files){
-  nam = mgsub(c("CIBERSORTxGEP_20180314_not_batch_corrected_",".txt_GEPs_StdErrs.txt"),c("",""),i)
+  nam = mgsub(c("CIBERSORTxGEP_2016_2017_NOT_BC_",".txt_GEPs_StdErrs.txt"),c("",""),i)
   namesStEr = c(namesStEr, nam)
 }
 
@@ -110,30 +106,28 @@ names(StEr) = namesStEr
 
 
 #extract genes in monocyte signature common for all samples 
-Mono_ster = data.frame(matrix(NA, nrow = length(universe), ncol = 1))
+Tcell_ster = data.frame(matrix(NA, nrow = length(universe), ncol = 1))
 for (i in namesStEr){
-  Error = StEr[[i]][StEr[[i]][,1] %in% universe,c("GeneSymbol","Monocytes")] #select gene_names and Monocytes
-  Mono_ster = cbind(Mono_ster,Error)
+  Error = StEr[[i]][StEr[[i]][,1] %in% universe,c("GeneSymbol","CD4Tcells")] #select gene_names and Monocytes
+  Tcell_ster = cbind(Tcell_ster,Error)
 }
 
-all(as.character(Mono_ster[,2])==as.character(Mono_ster[,4]))
-rownames(Mono_ster) = as.character(Mono_ster[,2])
-Mono_ster = Mono_ster[, seq(3, length(Mono_ster), 2)]
-colnames(Mono_ster) = c("DCIS","EN","IDC","normal")
+all(as.character(Tcell_ster[,2])==as.character(Tcell_ster[,4]))
+rownames(Tcell_ster) = as.character(Tcell_ster[,2])
+Tcell_ster = Tcell_ster[, seq(3, length(Tcell_ster), 2)]
+colnames(Tcell_ster) = c("AVL","DCIS","EN","IDC","normal")
 
-all(rownames(Mono_ex) == rownames(Mono_ster))
-
-# Mono_ster$gene = sub("HLA.","HLA-", Mono_ster$gene) 
+all(rownames(Tcell_ex) == rownames(Tcell_ster))
 
 ###########DE Chloe
 
-Mono_ex = Mono_ex[,c(4,2,1,3)]
-Mono_ster = Mono_ster[,c(4,2,1,3)]
+Tcell_ex = Tcell_ex[,c(5,3,2,4,1)]
+Tcell_ster = Tcell_ster[,c(5,3,2,4,1)]
 
-Geps = Mono_ex
+Geps = Tcell_ex
 dim(Geps)
 Geps = Geps[rowSums(!is.na(Geps)) >= 2,]
-StdErr = Mono_ster[rownames(Mono_ster) %in% rownames(Geps),]
+StdErr = Tcell_ster[rownames(Tcell_ster) %in% rownames(Geps),]
 all(rownames(Geps) == rownames(StdErr))
 
 Zqvals = matrix(NA,nrow(Geps),1)
@@ -161,7 +155,7 @@ Zqvals = data.frame(Zqvals)
 #extract only significant pValues
 sPv = list()
 for(i in colnames(Zqvals)){
-  sPv[[i]] = data.frame(genes = rownames(Zqvals)[which(Zqvals[,i]<= 0.1)], Zqv = Zqvals[which(Zqvals[,i]<= 0.1),i, drop = FALSE])
+  sPv[[i]] = data.frame(genes = rownames(Zqvals)[which(Zqvals[,i]<= 0.25)], Zqv = Zqvals[which(Zqvals[,i]<= 0.25),i, drop = FALSE])
 }
 
 #calculate all log2FoldChange
@@ -213,34 +207,65 @@ for(i in names(to_GSEA)){
 library(reshape2)
 library(plotly)
 library(magrittr)
-setwd("~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/volcano/")
-#"ENO1","P4HB", "CLTB","TAP2","HLA.C",
-#"B2M","GAPDH","HK3", "BAX","C4BPA",
-#"TREM2", "IDO1","CTSD","UBC","UBB","ANXA2"
+setwd("~/Desktop/s7s_Breast/data/2016_2017_NOT_batch_corrected/Tcells_plots/")
 
-#"ATM","PML","DDX5","DROSHA","BAX","FOXO3A","FOXO3","CASP8", "TP53I3"
+# "GZMA","GZMB","ICOS","CD69","CTLA4","ITGAE",
+# "FOXP3","IL10","TIGIT","IDO1","PDCD1","LAG3",
+# "IL19","IL18RAP","CD8A","CD8B","CD151","CD9",
+# "IL10","CTSB","CLIC1","CLIC3","ZAP70","TIMP4"
+# 
+# "CD40LG","CD69","CD8A","FASLG","ICOS","IFNG","GZMK","TBX21","TNFRSF9","TNF","CD151","IL18RAP","Il19","ZAP70"
+# "CTLA4","ITGAE","IL10","LAG3","IL12A"
 
 for(i in names(to_GSEA)){
   plotd = data.frame(LogFC = to_GSEA[[i]][, 2], LZqv = to_GSEA[[i]][, 4], gnames = to_GSEA[[i]][[1]])
-  m = plotd[plotd$gnames %in% c("ENO1","P4HB", "CLTB","TAP2","HLA.C","MMP9","MMP13","MMP14","MMP1","MMP11", "CASP8",
-                                "B2M","GAPDH", "BAX","C4BPA", "STAT6", "TLR5",
-                                "IDO1","CTSD","UBC","UBB","ANXA2",
-                                "TREM2", "APOE", "CD68","CHIT1", #activation
-                                "MARCO","FN1","NRP2","SPP1","CD276", #M2
-                                "CD64","FN1","MSR1","MMP14","CTSD", "CTSA","CTSC","CTSD","CTSK","CTSO","MARCO","VEGFB", #co-vary TAM in rudenski
-                                "IL4R", "ITGAL", "CD74", "HLA.DRA", "ISG15", "CD14",#monocytes
-                                "FGF1", "FGF12", "FGF13", "FGF14", "FGF17", "FGF18", "FGF2", "FGF20", "FGF21", "FGF22","FGF23","FGF7","FGF9","EGF","EGFR", "VEGFA","VEGFB","VEGFC",   
-                                "TGFA", "TGFB1", "TGFB1I1", "TGFB2", "TGFB3", "TGFBI", "TGFBR1", 
-                                "TGFBR2", "TGFBR3","TGFBRAP1"),]
-  a = list(x = m$LogFC, y = m$LZqv, text = m$gnames, font = list(size = 18))
+  m = plotd[plotd$gnames %in% c("SOX4","RAG1","BATF3","CXCL14","CD40LG","CD69","CD8A","FASLG","ICOS","IFNG","GZMK", 
+                                "CD3E","CXCR1","CASP8","IL7R","IL11RA", "TNFSF8",
+                                "TBX21","TNFRSF9","TNF","CD151","IL18RAP","IL19","ZAP70",
+                                "CTLA4","ITGAE","IL10","LAG3","IL12A", "CD2","TNFRSF18","TNFRSF4",
+                                "GZMA","GZMB","ICOS","CD69","CTLA4","ITGAE",
+                                "FOXP3","IL10","TIGIT","IDO1","PDCD1","LAG3",
+                                "IL19","IL18RAP","CD8A","CD8B","CD151","CD9",
+                                "IL10","CTSB","CLIC1","CLIC3","ZAP70","TIMP4",
+                                "CD40LG","CD69","CD8A","FASLG","ICOS","IFNG","GZMK","TBX21","TNFRSF9","TNF","CD151","IL18RAP","Il19","ZAP70",
+                                "CTLA4","ITGAE","IL10","LAG3","IL12A"),]
+  a = list(x = m$LogFC, y = m$LZqv, text = m$gnames)
   p = plot_ly(data = plotd, x = ~LogFC, y = ~LZqv, text = ~ gnames, marker = list(size = 20) ) %>%
     layout(title = i, xaxis = list(title = paste0("log2(FC_",i,")")), yaxis = list(title = "-log10(Zqv)"),
            annotations = a)
   print(p)
-  #export(p, paste0(i,"_10FDR_vulcano.png"))
+  #export(p, paste0(i,"new_selected_10FDR_vulcano.png"))
 }
 
-subd = Geps[rownames(Geps) %in% c("MMP9","MMP13","NFKBIA","CD163", "CD68","STAT3","DROSHA","CXCL10","IL12","IL13RA1","ENO1","P4HB","C4BPA"),]
+library(ggplot2)
+library(ggrepel)
+
+for(i in names(to_GSEA)){
+  to_GSEA[[i]]$Selected <- ifelse(to_GSEA[[i]]$Zqv < 0.05 , "FDR < 0.05", "Not Sig")
+  path = "~/Desktop/s7s_Breast/data/2016_2017_NOT_batch_corrected/Tcells_plots/CD4/vulcano_repeled/"
+  png(paste0(path,i,".png"), width = 1200, height = 1200)
+  p= ggplot(data.frame(to_GSEA[[i]]), aes(x = FC, y = ml10pv)) +
+    geom_point(aes(color = Selected)) +
+    scale_color_manual(values = c("red", "grey")) +
+    theme_bw(base_size = 12) + theme(legend.position = "bottom") +
+    geom_text_repel(
+      data = subset(data.frame(to_GSEA[[i]]), to_GSEA[[i]]$Zqv < 0.05),
+      aes(label = names),
+      size = 5,
+      box.padding = unit(0.35, "lines"),
+      point.padding = unit(0.3, "lines")) +
+    ggtitle(i) + labs(x = "LFC", y = "-log10 qvalue")
+  plot(p)
+  dev.off()
+}
+
+
+
+subd = Geps[rownames(Geps) %in% c("IL7R","CD25","CCR8","IDO1","TIM3","CD39","PDCD1LG2","CD274","CXCL13","CD204","CD205",
+                                  "CXCL14","GZMA","GZMB","ICOS","CD69","CTLA4","ITGAE","IL7R",
+                                  "FOXP3","IL10","TIGIT","IDO1","PDCD1","LAG3",
+                                  "IL19","IL18RAP","CD8A","CD8B","CD151","CD9",
+                                  "IL10","CTSB","CLIC1","CLIC3","ZAP70","TIMP4"),]
 subd = data.frame(names = rownames(subd), subd)
 l_subd = melt(subd, id.vars = "names")
 names(l_subd) = c("gname","stage","expr")
@@ -248,7 +273,6 @@ p = plot_ly(data = l_subd, x = ~stage, y = ~expr, color = ~gname, text = ~gname)
   add_lines() %>%  layout(showlegend = FALSE)  
 p
 
-#setwd("~/Desktop/s7s_Breast/data_after_decon/9_megaclasses/with_Megan_data/batch_corr/GSEA/input/")
 
 for(i in names(to_GSEA)){
   write.table(to_GSEA[[i]][,c(1,4)], paste0(i,".rnk"), sep = "\t", quote = FALSE, row.names = FALSE)
@@ -274,101 +298,59 @@ for(i in names(LFC_s)){
   to_enr[[i]] = cbind(LFC_s[[i]], Zqv = sPv[[i]][,i])
 }
 
-############plot volcano of only significant LFC
-for(i in names(to_enr)){
-  to_enr[[i]] = data.frame(to_enr[[i]], ml10pv = -log10(to_enr[[i]][,"Zqv"]))
-}
-
-setwd("~/Desktop/s7s_Breast/data_after_decon/8_batches_with_EN_batch_corr/plots/volcano/")
-
-for(i in names(to_enr)){
-  plotd = data.frame(LogFC = to_enr[[i]][, "FC"], LZqv = to_enr[[i]][, "ml10pv"], gnames = to_enr[[i]][,"names"])
-  m = plotd[plotd$gnames %in% c("ENO1","P4HB", "CLTB","TAP2","HLA.C","MMP9","MMP13","MMP14","MMP1","MMP11", "CASP8",
-                                "B2M","GAPDH", "BAX","C4BPA","TREM2", "APOE", "STAT6", "TLR5",
-                                "TREM2", "IDO1","CTSD","UBC","UBB","ANXA2",
-                                "TGFA", "TGFB1", "TGFB1I1", "TGFB2", "TGFB3", "TGFBI", "TGFBR1", 
-                                "TGFBR2", "TGFBR3","TGFBRAP1"),]
-  a = list(x = m$LogFC, y = m$LZqv, text = m$gnames, font = list(size = 18))
-  p = plot_ly(data = plotd, x = ~LogFC, y = ~LZqv, text = ~ gnames, marker = list(size = 20) ) %>%
-    layout(title = i, xaxis = list(title = paste0("log2(FC_",i,")")), yaxis = list(title = "-log10(Zqv)"),
-           annotations = a)
-  print(p)
-  #export(p, paste0(i,"significant_10FDR_vulcano.png"))
-}
 
 
 ##############
 #plot interesting genes
 ##############
-# "MMP9","MMP13","MMP11","MMP10","NFKBIA","CD163", "CD68","STAT3",
-# "DROSHA","CXCL10","IL13RA1","ENO1","P4HB", "CLTB","TAP2",
-# "ERAP1", "ERAP2","B2M","GAPDH","HK3",
-# "TREM2","DAP12"
+
 
 ImGenes = list()
-ImGenes[["TAMactivation"]] = c("TREM2", "CHIT1", "TLR5") #activation
-ImGenes[["M2_pol1"]] = c("TGFB1","IL4R","STAT6") #M2 polarizing
-ImGenes[["M2_pol2"]] = c("NFKBIA","TGFBI")
-ImGenes[["M2_rud"]] = c("FN1","NRP2") #M2
-ImGenes[["angio1"]] = c("ANXA2","FN1")
-ImGenes[["angio2"]] = c("MMP14","MMP2","VEGFB","NRP2")
-ImGenes[["TAM_rud"]] = c("CD64","FN1","MSR1","MMP14","CTSD", "CTSA","CTSC","CTSD","CTSK","CTSO","MARCO","VEGFB") #co-vary TAM in rudenski
-ImGenes[["Mono_rud"]] = c("HLA.DRA", "CD14") #monocytes
-ImGenes[["E_G_F"]] = c("FGF","VEGFB","VEGFC")
-ImGenes[["ER_stress"]] = c("P4HB","UBB","UBC","CTSD","PSMB4","PSMD11","PSMD14","PSMD2","PSME1")
-ImGenes[["antigen"]] = c("B2M","HLA.A","HLA.B","HLA.C")
-ImGenes[["TAP2"]] = c("TAP2","CD207","NOS3")
-ImGenes[["M2"]] = c("TGFB1", "TGFBI","NFKBIA")
-ImGenes[["phagocytosis"]] = c("TREM2","CD47")
-ImGenes[["phagocytosis2"]] =c("CLTB","CTSD", "CTSA","CTSC","CTSD","CTSK","CTSO")
-ImGenes[["glykolysis"]] = c("GAPDH","ENO1")
-ImGenes[["STAT"]] = c("STAT3","STAT6")
-ImGenes[["IFN1"]] = c("B2M","HLA.A","HLA.B","HLA.C","HLA.F")
-ImGenes[["IFN2"]] = c("IFI35","IFIT3","IRF7","STAT1")
-ImGenes[["apoptosis1"]] = c("ATM","PML","BAX")
-ImGenes[["apaptosis2"]] = c("CASP8","TP53I3")
-ImGenes[["MMPs"]] = c("MMP13","TIMP1","TIMP2","MMP14","MMP11") #"MMP9"
-ImGenes[["oxidatie_stress"]] = c("FOXO3","BAX")
-ImGenes[["DCIS_phago"]] = c("SPP1","TREM2","CXCR4")
-ImGenes[["TNF"]] = c("TNFRSF1A","TRAF5","RIPK1","RBCK1")
-ImGenes[["A20"]] = c("TNFAIP3","CYLD")
-genes = c("TAMactivation","M2_rud","M2_pol1","M2_pol2",
-          "angio1","angio2","Mono_rud","E_G_F","ER_stress",
-          "antigen","TAP2","M2","phagocytosis","phagocytosis2", 
-          "glykolysis","STAT","IFN1","IFN2","apoptosis1",
-          "apaptosis2","MMPs","oxidatie_stress","DCIS_phago","TNF","A20")
+ImGenes[["Treg_recruitment"]] = c("CCL5","CXCL14") #"CCR5"
+ImGenes[["memory_survival"]] = c("IL7R")
+ImGenes[["term_diff_inh_rud"]] = c("CTLA4") #,"TIGIT","FOXP3","IL2RA","CD39"
+ImGenes[["term_diff_stm_rud"]] = c("CD2") #,"TNFRSF9","TNFRSF4", "TNFRSF9","TNFRS18"
+ImGenes[["neg_sig"]] = c("CTLA4","LAG3","ITGAE")
+ImGenes[["act_sig1"]] = c("CD2","CD8A","CD3E")
+ImGenes[["act_sig2"]] = c("FASLG") #"CD151","IFNG","TBX21","BATF3"
+ImGenes[["fate"]] = c("SOX4","RAG1","BATF3","CXCL14")
+ImGenes[["act"]] = c("GZMA","GZMB","GZMK","ICOS","CD69","IL19","IL18RAP","CD8A","CD8B",
+                     "CD151","CD9","CD32","ZAP70", "CCL4","CCL5","CXCR4","CCR5")
+ImGenes[["migration"]] = c("CTSB","CLIC1","CLIC3","TIMP4")
+ImGenes[["inh"]] = c("CTLA4","ITGAE","FOXP3","IL10","TIGIT","IDO1","PDCD1","LAG3","HAVCR2") 
+ImGenes[["Treg"]] = c("CTLA4","ITGAE","IL10","LAG3","HAVCR2")
+ImGenes[["diff"]] = c("TNFRSF9","TNFRSF18","CTLA4","CD2")
+ImGenes[["Tcell_activation"]] = c("CD40LG","CD8A","FASLG","ICOS","IFNG","GZMK","TBX21","TNFRSF9","TNF","CD151","IL18RAP","Il19","ZAP70")
+genes = c("Treg_recruitment","memory_survival","term_diff_inh_rud","term_diff_stm_rud","neg_sig","act_sig1","act_sig2",
+          "fate","act","migration","inh","Treg","Tcell_activation","diff")
+
 
 library(reshape2)
 for(i in genes){
-  Immuno = Mono_ex[rownames(Mono_ex) %in% ImGenes[[i]],]
+  Immuno = Tcell_ex[rownames(Tcell_ex) %in% ImGenes[[i]],]
   Immuno = data.frame(gene.names = rownames(Immuno), Immuno)
   #Immuno$gene.names = as.factor(as.character(Immuno$gene.names))
   print(Immuno)
-  Immuno = Immuno[,c(1,2,3,4,5)]
-  #Immuno[,c(2,3)] =  log2(Immuno[,c(2,3)]+1)
+  Immuno = Immuno[,-6]
   long_Imm = melt(Immuno, id.vars = "gene.names")
   colnames(long_Imm) = c("gene.names","stage","gene.expression")
-  er = Mono_ster[rownames(Mono_ster) %in% Immuno$gene.names,]
+  er = Tcell_ster[rownames(Tcell_ster) %in% Immuno$gene.names,]
   er = data.frame(gene = rownames(er), er)
-  er = er[,c(1,2,3,4,5)]
-  #er[,c(2,3)] =  log2(er[,c(2,3)]+1)
+  er = er[,-6]
   #er$gene = as.factor(as.character(er$gene))
   er_long = melt(er, id.vars = "gene")
   long_Imm = data.frame(long_Imm, sd = er_long$value)
   long_Imm$sd[is.na(long_Imm$gene.expression)] = NA
-  
   print(ggplot(long_Imm,aes(gene.names,gene.expression, group = stage, fill =stage)) + 
           geom_col(position = "dodge")+ theme_classic()+
           theme(text = element_text(size=20))+ 
           geom_errorbar(aes(ymin=gene.expression-sd, ymax=gene.expression+sd), width=.2, position=position_dodge(.9)) +
-          scale_fill_manual(values=c("dodgerblue3","orange","chartreuse4","red")) +
+          scale_fill_manual(values=c("dodgerblue3","orange","chartreuse4","red","palevioletred3")) +
           theme(axis.text.x = element_text(angle = 60, hjust = 1))+
           ggtitle(i))
 }
 
-#"dodgerblue3","orange",
 
-test = to_enr$DCIS_IDC
 ####BC GO enrichment
 
 to_GO = list()
@@ -377,7 +359,7 @@ for(nm in names(to_enr)){
   to_GO[[paste0("DE_",nm,"_down")]] = to_enr[[nm]][which(to_enr[[nm]][,"FC"] < 0), "names"]
 }
 
-lengths(to_GO)
+lengths(to_GO)[-c(7,8,13,14,17,18,19,20)]
 
 library("Rgraphviz")
 library("DOSE")
@@ -399,6 +381,7 @@ for(element in names(to_GO)){
                              OrgDb = org.Hs.eg.db)
 }
 
+
 ###run GO analysis, I am running ont= BP (biological processes) /MF/CC
 GO_res = list()
 for(element in names(to_GO_EI)){
@@ -412,14 +395,12 @@ for(element in names(to_GO_EI)){
 }
 
 
-path = setwd("~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/dotplots/GO/")
+path = "~/Desktop/s7s_Breast/data/2016_2017_NOT_batch_corrected/Tcells_plots/CD8/GO_enrichment/"
 for(element in names(GO_res)){
-  png(paste0(path,"/",element,".png"), width = 900, height = 1100)
-  plot(dotplot(GO_res[[element]],showCategory=50)+labs(title= paste0("Macrophage_",element)))
+  png(paste0(path,element,".png"), width = 900, height = 1100)
+  plot(dotplot(GO_res[[element]],showCategory=50)+labs(title= paste0("CD8Tcell_",element)))
   dev.off()
 }
-
-dev.off()
 
 res = list()
 for(element in names(GO_res)){
@@ -431,14 +412,14 @@ for(element in names(GO_res)){
 
 #subset ID and p.adj for revigo analysis
 to_REV1 = GO_res$DE_DCIS_IDC_up@result[,c("ID","p.adjust")]
-write.table(to_REV1, "~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/DCIS_IDC_up.txt", sep = "\t", row.names = F, quote = FALSE)
+write.table(to_REV1, "~/Desktop/s7s_Breast/data_after_decon/8_batches_with_EN_batch_corr/plots/DCIS_IDC_up.txt", sep = "\t", row.names = F, quote = FALSE)
 
 ######disect genes for ploting
 
 to_plot = list()
-for(i in c("extracellular|movement|location|motility|migration","MHC|antigen|present","neutroph","collagen",
-           "folding|unfolded","virus|interferon","axon|neuron|projection",
-           "catabolic", "autophag","angiogen","ossification|skeletal","transform","ephrin")){
+for(i in c("oxygen|hypoxia|oxydative","MHC|antigen|present","neutroph","extracellular|collagen",
+           "folding|incorrect|unfolded","p53|apoptosis","cytokine|interferon","actin|Wnt|polarity",
+           "stress|apoptosis","catabolic", "metabolic|lipoprotein|lipid|cholesterol|sterol")){
   print(i)
   for(j in names(res)){
     print(j)
@@ -463,15 +444,15 @@ rownames(Geps) = sub("[.]","-", rownames(Geps))
 
 
 genes = to_plot
-names(genes) = c("migration","Antigen_presentation","neutrophil_responce","Extracellular_matrix_organization",
-                 "Unfolded_protein_responce","IFNI_cytokine_regulation","neuron",
-                 "catabolic_processes","autophagy","angiogenesis","bone_rormation","TNFb_responce","ephrin")
+names(genes) = c("responce_to_hypoxia","Antigen_presentation","neutrophil_responce","Extracellular_matrix_organization",
+                 "Unfolded_protein_responce","DNA_damage_apoptosis","IFNI_cytokine_regulation","Cell_polarity_Wnt",
+                 "stress_responce","catabolic_processes","metabolic_lipoprotein")
 
 ####-----------------------------------------------------------------------
 for(element in names(genes)){
   to_heatmap = Geps[rownames(Geps) %in% genes[[element]],]
   to_heatmap = as.matrix(to_heatmap)
-  path = "~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/heatmaps/"
+  path = "~/Desktop/s7s_Breast/data_after_decon/8_batches_with_EN_batch_corr/plots/heatmaps/"
   png(paste0(path,element,"_scalled_no_dendro.png"), width = 1000, height = 1200)
   heatmap.2(to_heatmap, scale = "row", na.color = "gray",
             trace="none", Rowv = F, Colv = F, dendrogram = "none", margins=c(6,8),
@@ -479,7 +460,7 @@ for(element in names(genes)){
             main= element)
   dev.off()
   
-  path = "~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/barplots/"
+  path = "~/Desktop/s7s_Breast/data_after_decon/8_batches_with_EN_batch_corr/plots/barplots/"
   to_barplot = data.frame(gene.names = rownames(to_heatmap), to_heatmap)
   long_barplot = melt(to_barplot, id.vars = "gene.names")
   colnames(long_barplot) = c("gene.names","stage","gene.count")
@@ -507,46 +488,9 @@ for(element in names(to_GO_EI)){
                                    pvalueCutoff = 0.05)
 }
 
-path = setwd("~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/dotplots/KEGG/")
+#path = setwd("~/Desktop/breast_cancer_progression/plots/BC_30_10_17/enrichment_analysis")
 for(element in names(KEGG_res)){
-  png(paste0(path,"/","KEGG_MO_",element,".png"), width = 900, height = 1100)
+  #png(paste0(path,"/","KEGG_MO_",element,".png"), width = 900, height = 1100)
   plot(dotplot(KEGG_res[[element]],showCategory=50)+labs(title= paste0("KEGG_Macrophage_",element)))
-  dev.off()
+  #dev.off()
 }
-
-# pt_code = c()
-# for(element in names(KEGG_res)){
-#   pt_code = c(pt_code,KEGG_res[[element]]$ID)
-# }
-
-KEGG_res$DE_DCIS_IDC_up@result[,c("ID","p.adjust", "Description","geneID","GeneRatio")]
-pathway = KEGG_res$DE_DCIS_IDC_up@result[,"ID"]
-pathway = c(pathway,"hsa04612","hsa03050","hsa04140","hsa04612")
-
-#geneList = merge(to_GO_EI$DE_DCIS_IDC_up,to_enr$DCIS_IDC,by.x = "SYMBOL", by.y = "names")
-
-dcis_idc = to_enr$DCIS_IDC
-dcis_idc$names = sub("[.]","-", dcis_idc$names)
-
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-dcis_idc$entrez = mapIds(org.Hs.eg.db,
-                        keys=dcis_idc$names,
-                        column=c("ENTREZID"),
-                        keytype = "SYMBOL",
-                        multiVals = "first")
-
-
-pathList = dcis_idc$FC
-names(pathList) = dcis_idc$entrez
-source("https://bioconductor.org/biocLite.R")
-biocLite("pathview")
-
-library(pathview)
-setwd("~/Desktop/s7s_Breast/data_after_decon/8_batches_not_batch_corr/plots/KEGG_pathways/run2/")
-pathview(gene.data  = pathList,
-         pathway.id = pathway,
-         species    = "hsa",
-         limit      = list(gene=max(abs(pathList)), cpd=1))
-

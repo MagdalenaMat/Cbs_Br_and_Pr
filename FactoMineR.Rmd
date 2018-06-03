@@ -1,0 +1,133 @@
+---
+title: "FactoMineR"
+author: "Peipei Lu and Magda Matusik"
+date: "Avril 22, 2017"
+output: html_document
+---
+
+Principle component analysis 
+http://www.sthda.com/english/wiki/factominer-and-factoextra-principal-component-analysis-visualization-r-software-and-data-mining
+
+```{r}
+
+install.packages("FactoMineR")
+library("FactoMineR")
+
+install.packages("devtools")
+library("devtools")
+install_github("kassambara/factoextra")
+library("factoextra")
+
+edata <- read.csv(file.choose(), row.names = 1)
+cibersort <- edata[,1:22]
+design.file <- read.csv(file.choose(), row.names = 1)
+design.file = pdata
+# normalization on edata with DESeq2 package
+library(DESeq2)
+dds = DESeqDataSetFromMatrix(countData = edata, colData = design.file, design = ~ type)
+dds <- estimateSizeFactors( dds )
+sizeFactors(dds)
+
+# Now we can divide the columns by the size factor and take the log2 of these normalized counts plus a pseudocount of 1. 
+logcounts <- log2( counts(dds, normalized=TRUE) + 1 )
+
+??counts
+
+# select top 1500 most highly expressed genes, and center the data
+# you will get same dataset as you do filtering on the raw dataset
+select = order(rowMeans(logcounts), decreasing=TRUE)[1:1500]
+m = logcounts[select,]
+m = m - rowMeans(m)
+dim(m)
+
+# We transpose in order to run PCA
+cibersort = t(cibersort)
+dim(cibersort)
+
+# my first categorical variable 
+Source = as.factor(design.file$Source)
+
+# my second categorical variable 
+Location = as.factor(design.file$Location)
+Grade = as.factor(design.file$Grade)
+age = as.factor(design.file$age..years.)
+sex = as.factor(design.file$sex)
+
+
+# The categorical variables must be merged with the data table.
+cibersort = cbind.data.frame(Source, Location, Grade, age, sex, cibersort)
+
+# descriptive statistics
+m_stats <- data.frame(
+  Min = apply(m, 2, min), # minimum
+  Q1 = apply(m, 2, quantile, 1/4), # First quartile
+  Med = apply(m, 2, median), # median
+  Mean = apply(m, 2, mean), # mean
+  Q3 = apply(m, 2, quantile, 3/4), # Third quartile
+  Max = apply(m, 2, max) # Maximum
+  )
+m_stats <- round(m_stats, 1)
+head(m_stats)
+
+# correlation matrix
+cor.mat <- round(cor(cibersort),2)
+head(cor.mat[, 1:6])
+
+# Visualize the correlation matrix using a correlogram
+install.packages("corrplot")
+library("corrplot")
+corrplot(cor.mat[1:10,1:10], type="upper", order="hclust", tl.col="black", tl.srt=45)
+
+# Principle component analysis
+library("FactoMineR")
+# tell PCA the first two columns are categorical variables
+res.pca <- PCA(cibersort, graph = FALSE, quali.sup = 1:5)
+res.pca = PCA(edata)
+# print the output of the PCA
+print(res.pca)
+
+# Extract the proportion of variances retained by the principal components
+# A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain.
+eigenvalues <- res.pca$eig
+head(eigenvalues[, 1:2])
+
+# Make a scree plot: a graph of the eigenvalues/variances associated with components:
+barplot(eigenvalues[, 2], names.arg=1:nrow(eigenvalues), 
+       main = "Variances",
+       xlab = "Principal Components",
+       ylab = "Percentage of variances",
+       col ="steelblue")
+# Add connected line segments to the plot
+lines(x = 1:nrow(eigenvalues), eigenvalues[, 2], type="b", pch=19, col = "red")
+
+# Make the scree plot using the package factoextra:
+fviz_screeplot(res.pca, ncp=10)
+
+# We can visualize the most important variables associated with a given PC, you can decide to show only the top contributing variables.
+fviz_pca_contrib(res.pca, choice = "var", axes = 1, top = 10)
+
+# We can  carry out the PCA and build the graph of individuals by colouring the individuals according to the variable case where habillage defines variable to colour (here the ???rst variable in the table). The size of the text can be changed using the setting cex ("cex = 0.7" instead of 1 by default):
+plot(res.pca,habillage=1,cex=0.7)
+plot(res.pca,habillage=2,cex=0.7)
+
+# It is also possible to visualise other components of the PCA
+plot(res.pca,habillage=1,axes=c(1,3),cex=0.7) 
+plot(res.pca,habillage=2,axes=c(1,3),cex=0.7)
+
+# draw confidence ellipses around the barycentre of the representation that belong to the same case:
+aa <- cbind.data.frame(m[,1],res.pca$ind$coord[,1:2])
+bb <- coord.ellipse(aa,bary=TRUE)
+plot.PCA(res.pca,habillage=1,ellipse=bb)
+
+# Extract genes that most linked to the dimension (proba = 0.05 by default) by dimdesc function:
+gene_list = dimdesc(res.pca)
+gene_list_PC1 = gene_list$Dim.1$quanti
+gene_list_PC2 = gene_list$Dim.2$quanti
+gene_list_PC3 = gene_list$Dim.3$quanti
+
+# For each component, the genes that are positively correlated are underexpressed in groups with negative component value.
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

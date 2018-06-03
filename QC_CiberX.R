@@ -61,7 +61,10 @@ mydf <- data.frame(row.names = rownames(to_plot), category = type)
 mydfLN = data.frame(row.names = rownames(wLN), category = type_w_LN)
 
 # add row annotations
+to_plot[to_plot >= 0.5] = 0.5
 pheatmap(to_plot, cluster_cols = F, cluster_rows = F, annotation_row = mydf,gaps_row = c(6, 12) )
+
+wLN[wLN >= 0.5] = 0.5
 pheatmap(wLN, cluster_cols = F, cluster_rows = F, annotation_row = mydfLN,gaps_row = c(6, 12, 14) )
 
 ######
